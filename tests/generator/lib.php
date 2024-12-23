@@ -15,12 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Generator for the disable_delete_students plugin.
+ * Generator for the tool_disable_delete_students plugin.
  *
  * This class provides methods for creating test courses and users
  * with specific roles for testing purposes.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
@@ -29,10 +29,10 @@
 /**
  * Tool disable_delete_students generator
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @category   test
  */
-class disable_delete_students_generator extends testing_module_generator {
+class tool_disable_delete_students_generator extends testing_module_generator {
     /**
      * Create a test course with specific settings.
      *

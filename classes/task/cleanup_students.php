@@ -18,20 +18,20 @@
  * Scheduled task for managing student accounts lifecycle.
  *
  * This task handles the automated process of disabling and/or deleting student accounts
- * based on configured criteria within the disable_delete_students plugin.
+ * based on configured criteria within the tool_disable_delete_students plugin.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
 
-namespace disable_delete_students\task;
+namespace tool_disable_delete_students\task;
 
 /**
  * Scheduled task class for cleaning up student accounts.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  */
 class cleanup_students extends \core\task\scheduled_task {
 
@@ -42,7 +42,7 @@ class cleanup_students extends \core\task\scheduled_task {
      * @throws \coding_exception
      */
     public function get_name() {
-        return get_string('taskname', 'disable_delete_students');
+        return get_string('taskname', 'tool_disable_delete_students');
     }
 
     /**
@@ -54,6 +54,6 @@ class cleanup_students extends \core\task\scheduled_task {
      * @return void
      */
     public function execute() {
-        \disable_delete_students\util::process_student_accounts();
+        \tool_disable_delete_students\util::process_student_accounts();
     }
 }

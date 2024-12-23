@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Scheduled task definitions for the disable_delete_students plugin.
+ * Scheduled task definitions for the tool_disable_delete_students plugin.
  *
  * This file contains the configuration for scheduled tasks related to
  * the management of student accounts, specifically for disabling accounts
  * based on defined criteria.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
@@ -29,10 +29,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Define the scheduled tasks for the disable_delete_students plugin.
+// Define the scheduled tasks for the tool_disable_delete_students plugin.
 $tasks = [
     [
-        'classname' => 'disable_delete_students\task\cleanup_students',
+        'classname' => 'tool_disable_delete_students\task\cleanup_students',
         'blocking' => 0,
         'minute' => '0',
         'hour' => '0',

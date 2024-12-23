@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings for the disable_delete_students plugin.
+ * Language strings for the tool_disable_delete_students plugin.
  *
  * This file contains the language strings used in the plugin for managing
  * student account lifecycle operations, including disabling and deleting
  * accounts based on defined criteria.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>

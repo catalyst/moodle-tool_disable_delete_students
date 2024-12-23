@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for the disable_delete_students plugin.
+ * Version information for the tool_disable_delete_students plugin.
 
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
@@ -28,6 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2024021500;
 $plugin->requires  = 2022112800; // Moodle 4.1
-$plugin->component = 'disable_delete_students';
+$plugin->component = 'tool_disable_delete_students';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = '1.0';

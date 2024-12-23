@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for the disable_delete_students plugin.
+ * Unit tests for the tool_disable_delete_students plugin.
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @category   test
  * @copyright  2024 Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace disable_delete_students;
+namespace tool_disable_delete_students;
 
 /**
- * Unit tests for the disable_delete_students plugin.
+ * Unit tests for the tool_disable_delete_students plugin.
  *
  * The tests include:
  * - Verification of excluded roles
@@ -35,7 +35,7 @@ namespace disable_delete_students;
  * - Ensuring users with excluded roles are not affected
  * - Handling of students enrolled in multiple courses
  *
- * @package    disable_delete_students
+ * @package    tool_disable_delete_students
  * @category   test
  * @copyright  2024 Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -59,9 +59,9 @@ final class cleanup_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         // Set plugin configurations.
-        set_config('disable_after_course_end', 21, 'disable_delete_students');
-        set_config('disable_after_creation', 45, 'disable_delete_students');
-        set_config('delete_after_months', 6, 'disable_delete_students');
+        set_config('disable_after_course_end', 21, 'tool_disable_delete_students');
+        set_config('disable_after_creation', 45, 'tool_disable_delete_students');
+        set_config('delete_after_months', 6, 'tool_disable_delete_students');
 
         // Retrieve system roles.
         $this->studentrole = $DB->get_record('role', ['shortname' => 'student']);
