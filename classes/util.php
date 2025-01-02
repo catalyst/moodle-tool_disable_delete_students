@@ -30,7 +30,6 @@
 
 namespace tool_disable_delete_students;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Utility class containing static methods for student account management.

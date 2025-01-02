@@ -22,7 +22,8 @@
  * @copyright  2024 Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace tool_disable_delete_students;
+
+use tool_disable_delete_students\util;
 
 /**
  * Unit tests for the tool_disable_delete_students plugin.
@@ -77,7 +78,7 @@ final class cleanup_test extends \advanced_testcase {
      */
     private function create_course_with_dates(int $endoffset): \stdClass {
         $startdate = time() - (360 * DAYSECS); // Start date 360 days ago.
-        $enddate = $startdate + $endoffset;    // End date based on offset.
+        $enddate = time() + $endoffset;    // End date based on offset.
 
         return $this->getDataGenerator()->create_course([
             'startdate' => $startdate,
@@ -127,11 +128,20 @@ final class cleanup_test extends \advanced_testcase {
         // Enrol student in course.
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $this->studentrole->id);
 
+        // Start output buffering.
+        ob_start();
+
         // Run cleanup.
         util::process_student_accounts();
 
         // Check if student account was disabled.
         $updateduser = $DB->get_record('user', ['id' => $student->id]);
+
+        // Capture the output.
+        $output = ob_get_clean();
+
+        // Assert the expected output.
+        $this->assertStringContainsString("Disabled user: {$student->username}", $output);
         $this->assertEquals(1, $updateduser->suspended);
     }
 
@@ -146,17 +156,26 @@ final class cleanup_test extends \advanced_testcase {
 
         // Create student with old creation date.
         $student = $this->getDataGenerator()->create_user();
-        $DB->set_field('user', 'timecreated', time() - (46 * DAYSECS), ['id' => $student->id]);
+        $DB->set_field('user', 'timecreated', time() - (46 * DAYSECS), ['id' => $student->id]); // Set creation date to 46 days ago.
 
         // Assign student role.
         $systemcontext = \context_system::instance();
         role_assign($this->studentrole->id, $student->id, $systemcontext->id);
+
+        // Start output buffering.
+        ob_start();
 
         // Run cleanup.
         util::process_student_accounts();
 
         // Check if student account was disabled.
         $updateduser = $DB->get_record('user', ['id' => $student->id]);
+
+        // Capture the output.
+        $output = ob_get_clean();
+
+        // Assert the expected output.
+        $this->assertStringContainsString("Disabled user: {$student->username}", $output);
         $this->assertEquals(1, $updateduser->suspended);
     }
 
@@ -171,18 +190,30 @@ final class cleanup_test extends \advanced_testcase {
 
         // Create test data.
         $student = $this->getDataGenerator()->create_user();
+        // Set the creation date to now (this is not relevant for deletion in this test).
+        $DB->set_field('user', 'timecreated', time(), ['id' => $student->id]);
 
-        // Create course that ended 6 months ago.
-        $course = $this->create_course_with_dates(-180 * DAYSECS);
+        // Create a course that ended 7 months ago (more than the delete threshold).
+        $course = $this->create_course_with_dates(-210 * DAYSECS); // 210 days ago
 
-        // Enrol student in course.
+        // Enrol student in the course.
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $this->studentrole->id);
+
+        // Start output buffering.
+        ob_start();
 
         // Run cleanup.
         util::process_student_accounts();
 
         // Check if student account was deleted.
         $userexists = $DB->record_exists('user', ['id' => $student->id, 'deleted' => 0]);
+
+
+        // Capture the output.
+        $output = ob_get_clean();
+
+        // Assert the expected output.
+        $this->assertStringContainsString("Deleted user: {$student->username}", $output);
         $this->assertFalse($userexists);
     }
 
