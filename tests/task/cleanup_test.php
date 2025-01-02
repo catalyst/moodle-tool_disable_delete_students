@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace tool_disable_delete_students\task;
 use tool_disable_delete_students\util;
 
 /**
@@ -74,7 +75,7 @@ final class cleanup_test extends \advanced_testcase {
      * Create a course with valid start and end dates
      *
      * @param int $endoffset Number of seconds to offset the end date from start
-     * @return stdClass The created course
+     * @return \stdClass The created course
      */
     private function create_course_with_dates(int $endoffset): \stdClass {
         $startdate = time() - (360 * DAYSECS); // Start date 360 days ago.
@@ -207,7 +208,6 @@ final class cleanup_test extends \advanced_testcase {
 
         // Check if student account was deleted.
         $userexists = $DB->record_exists('user', ['id' => $student->id, 'deleted' => 0]);
-
 
         // Capture the output.
         $output = ob_get_clean();

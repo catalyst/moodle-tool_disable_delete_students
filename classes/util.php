@@ -86,11 +86,11 @@ class util {
         $deleteaftermonths = get_config('tool_disable_delete_students', 'delete_after_months');
 
         // Get all active student accounts.
-        $sql = "SELECT DISTINCT u.* 
+        $sql = "SELECT DISTINCT u.*
                 FROM {user} u
                 JOIN {role_assignments} ra ON ra.userid = u.id
                 JOIN {role} r ON r.id = ra.roleid
-                WHERE u.deleted = 0 
+                WHERE u.deleted = 0
                 AND r.shortname = 'student'";
 
         $students = $DB->get_records_sql($sql);
