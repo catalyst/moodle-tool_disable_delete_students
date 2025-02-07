@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_disable_delete_students;
+
 /**
  * Generator for the tool_disable_delete_students plugin.
  *
@@ -24,12 +26,6 @@
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
- */
-
-/**
- * Tool disable_delete_students generator
- *
- * @package    tool_disable_delete_students
  * @category   test
  */
 class tool_disable_delete_students_generator extends testing_module_generator {
@@ -44,25 +40,6 @@ class tool_disable_delete_students_generator extends testing_module_generator {
         if (!isset($record['startdate'])) {
             $record['startdate'] = time();
         }
-        return $this->getDataGenerator()->create_course($record);
-    }
-
-    /**
-     * Create a test user with a specific role.
-     *
-     * @param string $role The role to assign to the user.
-     * @param array|null $record Optional settings for the user.
-     * @return stdClass User record.
-     * @throws dml_exception|coding_exception If there is a database error while assigning the role.
-     */
-    public function create_test_user_with_role($role, $record = null) {
-        global $DB;
-        $user = $this->getDataGenerator()->create_user($record);
-        $systemcontext = \context_system::instance();
-        $rolerecord = $DB->get_record('role', ['shortname' => $role]);
-        if ($rolerecord) {
-            role_assign($rolerecord->id, $user->id, $systemcontext->id);
-        }
-        return $user;
+        // Additional logic for creating the course...
     }
 }

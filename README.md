@@ -30,3 +30,7 @@ After installation, configure the plugin settings:
 ## Testing
 
 The plugin includes PHPUnit tests to ensure functionality. To run the tests, navigate to the Moodle root directory and execute:
+
+```bash
+vendor/bin/phpunit tests/task/cleanup_test.php
+```

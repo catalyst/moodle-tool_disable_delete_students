@@ -36,43 +36,19 @@ namespace tool_disable_delete_students;
  */
 class util {
     /**
-     * Get the list of roles that should be excluded from the cleanup process.
-     *
-     * Users with these roles will not be subject to automatic disabling or deletion,
-     * even if they also have a student role.
-     *
-     * @return array Array of role shortnames that are excluded from processing
-     */
-    public static function get_excluded_roles(): array {
-        return ['coursecreator', 'editingteacher', 'teacher', 'manager', 'admin'];
-    }
-
-    /**
-     * Check if a user has any roles that exclude them from cleanup.
+     * Check if a user has the protected account capability.
      *
      * @param int $userid The ID of the user to check
-     * @return bool True if the user has any excluded roles, false otherwise
+     * @return bool True if the user has the protected account capability, false otherwise
      */
-    public static function has_excluded_roles(int $userid): bool {
-        global $DB;
-
-        $excludedroles = self::get_excluded_roles();
-        $roles = get_user_roles(\context_system::instance(), $userid);
-
-        foreach ($roles as $role) {
-            if (in_array($role->shortname, $excludedroles)) {
-                return true;
-            }
-        }
-
-        return false;
+    public static function has_protected_account_capability(int $userid): bool {
+        return user_has_capability('tool/disable_delete_students:protected', \context_system::instance(), $userid);
     }
 
     /**
      * Process all student accounts for potential disabling or deletion.
      *
      * This method implements the main business logic for account management:
-     * - Identifies active student accounts
      * - Checks each account against configured timeframes
      * - Disables accounts that meet the disability criteria
      * - Deletes accounts that meet the deletion criteria
@@ -96,8 +72,8 @@ class util {
         $students = $DB->get_records_sql($sql);
 
         foreach ($students as $student) {
-            // Skip if user has excluded roles.
-            if (self::has_excluded_roles($student->id)) {
+            // Skip if user has protected account capability.
+            if (self::has_protected_account_capability($student->id)) {
                 continue;
             }
 
