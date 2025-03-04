@@ -36,76 +36,141 @@ namespace tool_disable_delete_students;
  */
 class util {
     /**
-     * Check if a user has the protected account capability.
+     * Get the list of roles that should be excluded from the cleanup process.
+     *
+     * Users with these roles will not be subject to automatic disabling or deletion,
+     * even if they also have a student role.
+     *
+     * @return array Array of role shortnames that are excluded from processing
+     */
+    public static function get_excluded_roles(): array {
+        return ['coursecreator', 'editingteacher', 'teacher', 'manager', 'admin'];
+    }
+
+    /**
+     * Check if a user has any roles that exclude them from cleanup.
      *
      * @param int $userid The ID of the user to check
-     * @return bool True if the user has the protected account capability, false otherwise
+     * @return bool True if the user has any excluded roles, false otherwise
+     * @throws \dml_exception
+     * @throws \coding_exception
      */
-    public static function has_protected_account_capability(int $userid): bool {
-        return user_has_capability('tool/disable_delete_students:protected', \context_system::instance(), $userid);
+    public static function has_excluded_roles(int $userid): bool {
+        // Use has_capability() instead of direct DB query.
+        $context = \context_system::instance();
+        return has_capability('tool/disable_delete_students:protected', $context, $userid);
     }
 
     /**
      * Process all student accounts for potential disabling or deletion.
      *
      * This method implements the main business logic for account management:
+     * - Identifies active student accounts
      * - Checks each account against configured timeframes
      * - Disables accounts that meet the disability criteria
      * - Deletes accounts that meet the deletion criteria
      * - Respects role-based exclusions
      */
-    public static function process_student_accounts() {
-        global $DB, $CFG;
+    public static function process_student_accounts(): void {
+        global $DB;
 
-        $disableaftercourseend = get_config('tool_disable_delete_students', 'disable_after_course_end');
-        $disableaftercreation = get_config('tool_disable_delete_students', 'disable_after_creation');
-        $deleteaftermonths = get_config('tool_disable_delete_students', 'delete_after_months');
-
-        // Get all active student accounts.
-        $sql = "SELECT DISTINCT u.*
+        // Get all users who are not already deleted or suspended.
+        $sql = "SELECT u.*
                 FROM {user} u
-                JOIN {role_assignments} ra ON ra.userid = u.id
-                JOIN {role} r ON r.id = ra.roleid
                 WHERE u.deleted = 0
-                AND r.shortname = 'student'";
+                AND u.suspended = 0
+                AND u.id > 1"; // Exclude admin user.
 
-        $students = $DB->get_records_sql($sql);
+        $users = $DB->get_records_sql($sql);
 
-        foreach ($students as $student) {
-            // Skip if user has protected account capability.
-            if (self::has_protected_account_capability($student->id)) {
+        foreach ($users as $user) {
+            // Skip users with excluded roles.
+            if (self::has_excluded_roles($user->id)) {
                 continue;
             }
 
-            $shoulddisable = false;
-            $shoulddelete = false;
-
-            // Check course end date condition.
-            $latestcourseend = self::get_latest_course_end_date($student->id);
-            if ($latestcourseend) {
-                $dayssincecourseend = (time() - $latestcourseend) / DAYSECS;
-                if ($dayssincecourseend > $disableaftercourseend) {
-                    $shoulddisable = true;
-                }
-                if ($dayssincecourseend > ($deleteaftermonths * 30)) {
-                    $shoulddelete = true;
-                }
+            // Check if user should be deleted (enrolled in courses that ended more than 6 months ago).
+            if (self::should_delete_user($user)) {
+                delete_user($user);
+                mtrace("Deleted user: {$user->username}");
+                continue;
             }
 
-            // Check account creation date condition.
-            $dayssincecreation = (time() - $student->timecreated) / DAYSECS;
-            if ($dayssincecreation > $disableaftercreation) {
-                $shoulddisable = true;
-            }
-
-            if ($shoulddelete) {
-                delete_user($student);
-                mtrace("Deleted user: " . $student->username);
-            } else if ($shoulddisable && !$student->suspended) {
-                $DB->set_field('user', 'suspended', 1, ['id' => $student->id]);
-                mtrace("Disabled user: " . $student->username);
+            // Check if user should be disabled.
+            if (self::should_disable_user($user)) {
+                $user->suspended = 1;
+                $DB->update_record('user', $user);
+                mtrace("Disabled user: {$user->username}");
             }
         }
+    }
+
+    /**
+     * Check if a user should be deleted
+     *
+     * @param \stdClass $user The user record to check
+     * @return bool True if the user should be deleted
+     * @throws \dml_exception
+     */
+    private static function should_delete_user(\stdClass $user): bool {
+        global $DB;
+
+        // Get the user's most recent course end date.
+        $sql = "SELECT MAX(c.enddate) as lastenddate
+                FROM {user_enrolments} ue
+                JOIN {enrol} e ON e.id = ue.enrolid
+                JOIN {course} c ON c.id = e.courseid
+                WHERE ue.userid = :userid";
+
+        $params = ['userid' => $user->id];
+        $record = $DB->get_record_sql($sql, $params);
+
+        if (!$record || !$record->lastenddate) {
+            return false;
+        }
+
+        // Delete if the last course ended more than 6 months ago.
+        return ($record->lastenddate < time() - (180 * DAYSECS));
+    }
+
+    /**
+     * Check if a user should be disabled
+     *
+     * @param \stdClass $user The user record to check
+     * @return bool True if the user should be disabled
+     * @throws \dml_exception
+     */
+    private static function should_disable_user(\stdClass $user): bool {
+        global $DB;
+
+        // First check if user has any course enrollments.
+        $hasenrollments = $DB->record_exists('user_enrolments', ['userid' => $user->id]);
+
+        if (!$hasenrollments) {
+            // If no enrollments, check account age.
+            return ($user->timecreated < time() - (45 * DAYSECS));
+        }
+
+        // Check for active or future courses.
+        $sql = "SELECT 1
+                FROM {user_enrolments} ue
+                JOIN {enrol} e ON e.id = ue.enrolid
+                JOIN {course} c ON c.id = e.courseid
+                WHERE ue.userid = :userid
+                AND (c.enddate = 0 OR c.enddate > :cutoffdate)";
+
+        $params = [
+            'userid' => $user->id,
+            'cutoffdate' => time() - (21 * DAYSECS),
+        ];
+
+        // If there are any active or future courses, don't disable.
+        if ($DB->record_exists_sql($sql, $params)) {
+            return false;
+        }
+
+        // User has only old course enrollments or old account.
+        return true;
     }
 
     /**
@@ -116,6 +181,7 @@ class util {
      *
      * @param int $userid The ID of the user to check
      * @return int|null The timestamp of the latest course end date, or null if no valid end dates found
+     * @throws \dml_exception
      */
     private static function get_latest_course_end_date(int $userid): ?int {
         global $DB;

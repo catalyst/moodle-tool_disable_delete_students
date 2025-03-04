@@ -33,7 +33,7 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configtext(
         'tool_disable_delete_students/disable_after_course_end',
         get_string('disable_after_course_end', 'tool_disable_delete_students'),
-        get_string('configdisable_after_course_end', 'tool_disable_delete_students'),
+        get_string('disable_after_course_end', 'tool_disable_delete_students'),
         30 // Default value
     ));
 

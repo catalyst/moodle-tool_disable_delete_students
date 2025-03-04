@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_disable_delete_students\task;
+
 /**
  * Scheduled task for managing student accounts lifecycle.
  *
@@ -24,14 +26,6 @@
  * @copyright  2024 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
- */
-
-namespace tool_disable_delete_students\task;
-
-/**
- * Scheduled task class for cleaning up student accounts.
- *
- * @package    tool_disable_delete_students
  */
 class cleanup_students extends \core\task\scheduled_task {
 
